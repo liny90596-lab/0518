@@ -42,23 +42,15 @@ function draw() {
 
 // === 1. 開始畫面 ===
 function drawStartScreen() {
+  background('#e7c6ff');
+  textSize(48);
   textAlign(CENTER, CENTER);
   fill(80, 50, 120);
-  
-  textSize(48);
   text("剪刀石頭布 AI 大對決", width / 2, height / 2 - 80);
   
   textSize(24);
   text("請伸出你的右手或左手對準鏡頭出拳", width / 2, height / 2);
-  
-  // 開始按鈕樣式
-  fill(255);
-  rectMode(CENTER);
-  rect(width / 2, height / 2 + 100, 200, 60, 15);
-  
-  fill(80, 50, 120);
-  textSize(22);
-  text("開始遊戲", width / 2, height / 2 + 100);
+  drawButton(width / 2, height / 2 + 100, 200, 60, "開始遊戲", color(255), color(80, 50, 120));
 }
 
 // === 2. 遊戲畫面 ===
@@ -68,9 +60,29 @@ function drawPlayScreen() {
   let vH = height * 0.5;
   let vX = (width - vW) / 2;
   let vY = (height - vH) / 2;
+
+  // 1. 繪製視訊視窗的裝飾邊框與標題欄
+  rectMode(CORNER);
+  noStroke();
+  fill(80, 50, 120);
+  rect(vX, vY - 30, vW, 30, 10, 10, 0, 0); // 頂部標題欄
+  fill(255);
+  textSize(16);
+  textAlign(LEFT, CENTER);
+  text("  📸 鏡像視訊預覽", vX + 5, vY - 15);
   
-  // 在視窗中間繪製視訊影像
-  image(video, vX, vY, vW, vH);
+  // 繪製視訊影像 (加入水平翻轉，讓使用者操作更直覺)
+  push();
+  translate(vX + vW, vY);
+  scale(-1, 1);
+  image(video, 0, 0, vW, vH);
+  pop();
+  
+  // 影像邊框
+  stroke(80, 50, 120);
+  strokeWeight(2);
+  noFill();
+  rect(vX, vY, vW, vH);
   
   // 偵測並繪製手部骨架與判定手勢
   if (hands.length > 0) {
@@ -97,11 +109,7 @@ function drawPlayScreen() {
   text(`目前比分 - 你: ${scoreUser} 點 | AI: ${scoreAI} 點`, width / 2, 90);
   
   // 出拳確認與回報按鈕
-  fill(255);
-  rect(width / 2, height - 80, 200, 50, 10);
-  fill(80, 50, 120);
-  textSize(20);
-  text("確認出拳對決", width / 2, height - 90);
+  drawButton(width / 2, height - 80, 200, 50, "確認出拳對決", color(255), color(80, 50, 120));
 }
 
 // === 3. 結束畫面 ===
@@ -109,27 +117,38 @@ function drawEndScreen() {
   textAlign(CENTER, CENTER);
   fill(80, 50, 120);
   
+  let resultEmoji = userChoice === aiChoice ? "😮" : (gameResult.includes("你贏") ? "🎉" : "🤖");
   textSize(56);
-  text(gameResult, width / 2, height / 2 - 120);
+  text(`${gameResult} ${resultEmoji}`, width / 2, height / 2 - 120);
   
   textSize(26);
-  text("你出了: " + userChoice + "  vs  AI 出了: " + aiChoice, width / 2, height / 2 - 40);
+  text(`你出了: ${userChoice}  vs  AI 出了: ${aiChoice}`, width / 2, height / 2 - 40);
   
   textSize(32);
   text(`最終總比分 -> 你: ${scoreUser} | AI: ${scoreAI}`, width / 2, height / 2 + 30);
   
-  // 再玩一次按鈕
-  fill(255);
-  rect(width / 2 - 120, height / 2 + 140, 180, 55, 10);
-  fill(80, 50, 120);
+  drawButton(width / 2 - 120, height / 2 + 140, 180, 55, "再玩一次", color(255), color(80, 50, 120));
+  drawButton(width / 2 + 120, height / 2 + 140, 180, 55, "返回首頁", color(240, 150, 150), color(255));
+}
+
+// === 輔助功能：通用按鈕繪製 ===
+function drawButton(x, y, w, h, label, bgColor, txtColor) {
+  push();
+  rectMode(CENTER);
+  noStroke();
+  // 簡單的懸停效果
+  if (mouseX > x - w/2 && mouseX < x + w/2 && mouseY > y - h/2 && mouseY < y + h/2) {
+    fill(red(bgColor) * 0.9, green(bgColor) * 0.9, blue(bgColor) * 0.9);
+    cursor(HAND);
+  } else {
+    fill(bgColor);
+  }
+  rect(x, y, w, h, 15);
+  fill(txtColor);
   textSize(20);
-  text("再玩一次", width / 2 - 120, height / 2 + 140);
-  
-  // 徹底結束按鈕
-  fill(240, 150, 150);
-  rect(width / 2 + 120, height / 2 + 140, 180, 55, 10);
-  fill(255);
-  text("返回首頁", width / 2 + 120, height / 2 + 140);
+  textAlign(CENTER, CENTER);
+  text(label, x, y);
+  pop();
 }
 
 // === 骨架繪製功能 ===
@@ -154,7 +173,7 @@ function drawSkeleton(hand, vX, vY, vW, vH) {
   beginShape();
   let pts = [0, 5, 9, 13, 17, 0];
   for(let idx of pts) {
-    let scrX = map(kp[idx].x, 0, video.width, vX, vX + vW);
+    let scrX = map(kp[idx].x, 0, video.width, vX + vW, vX); // 修正為鏡像座標對應
     let scrY = map(kp[idx].y, 0, video.height, vY, vY + vH);
     vertex(scrX, scrY);
   }
@@ -164,7 +183,7 @@ function drawSkeleton(hand, vX, vY, vW, vH) {
   noStroke();
   fill(255, 107, 107);
   for (let i = 0; i < kp.length; i++) {
-    let scrX = map(kp[i].x, 0, video.width, vX, vX + vW);
+    let scrX = map(kp[i].x, 0, video.width, vX + vW, vX); // 修正為鏡像座標對應
     let scrY = map(kp[i].y, 0, video.height, vY, vY + vH);
     ellipse(scrX, scrY, 10, 10);
   }
@@ -174,7 +193,7 @@ function drawSkeleton(hand, vX, vY, vW, vH) {
 function drawSegment(kp, start, end, vX, vY, vW, vH) {
   beginShape();
   for (let i = start; i <= end; i++) {
-    let scrX = map(kp[i].x, 0, video.width, vX, vX + vW);
+    let scrX = map(kp[i].x, 0, video.width, vX + vW, vX); // 修正為鏡像座標對應
     let scrY = map(kp[i].y, 0, video.height, vY, vY + vH);
     vertex(scrX, scrY);
   }
@@ -202,12 +221,11 @@ function analyzeGesture(hand) {
   // 手勢判斷邏輯
   if (openedFingers >= 3) {
     return "布";
-  } else if (indexOpen && middleOpen && !ringOpen && !pinkyOpen) {
+  } else if (indexOpen && middleOpen) {
     return "剪刀";
-  } else if (openedFingers === 0) {
+  } else {
     return "石頭";
   }
-  return "未知手勢";
 }
 
 // === 電腦出拳與結果計算 ===
@@ -221,16 +239,16 @@ function runMatch() {
   aiChoice = random(options);
   
   if (userChoice === aiChoice) {
-    gameResult = "平手！ 😮";
+    gameResult = "平手！";
   } else if (
     (userChoice === "石頭" && aiChoice === "剪刀") ||
     (userChoice === "剪刀" && aiChoice === "布") ||
     (userChoice === "布" && aiChoice === "石頭")
   ) {
-    gameResult = "你贏了！ 🎉";
+    gameResult = "你贏了！";
     scoreUser++;
   } else {
-    gameResult = "AI 贏了！ 🤖";
+    gameResult = "AI 贏了！";
     scoreAI++;
   }
   
@@ -239,6 +257,7 @@ function runMatch() {
 
 // === 視窗點擊事件處理（控制畫面切換） ===
 function mousePressed() {
+  cursor(ARROW);
   if (gameState === "START") {
     // 點擊「開始遊戲」按鈕範圍
     if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 &&
