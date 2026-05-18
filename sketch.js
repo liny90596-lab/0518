@@ -145,10 +145,10 @@ function drawSkeleton(hand, vX, vY, vW, vH) {
   
   // 依據指定規則串接五根手指的點 (0-4, 5-8, 9-12, 13-16, 17-20)
   drawSegment(kp, 0, 4, vX, vY, vW, vH);
-  drawSegment(landmarks, 5, 8, vX, vY, vW, vH);
-  drawSegment(landmarks, 9, 12, vX, vY, vW, vH);
-  drawSegment(landmarks, 13, 16, vX, vY, vW, vH);
-  drawSegment(landmarks, 17, 20, vX, vY, vW, vH);
+  drawSegment(kp, 5, 8, vX, vY, vW, vH);
+  drawSegment(kp, 9, 12, vX, vY, vW, vH);
+  drawSegment(kp, 13, 16, vX, vY, vW, vH);
+  drawSegment(kp, 17, 20, vX, vY, vW, vH);
   
   // 順便把手腕(0)與指根(5, 9, 13, 17)連起來，讓手掌更完整（可選）
   beginShape();
