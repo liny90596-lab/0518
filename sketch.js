@@ -45,14 +45,17 @@ function drawStartScreen() {
   // 在開始畫面也顯示視訊預覽，讓玩家可以先調整位置
   drawVideoWindow();
   
-  textAlign(CENTER, CENTER);
+  push();
+  textAlign(CENTER, TOP);
   fill(80, 50, 120);
-  textSize(48);
-  text("剪刀石頭布 AI 大對決", width / 2, height * 0.2);
+  textSize(max(24, width * 0.04)); // 標題大小隨視窗縮放
+  text("剪刀石頭布 AI 大對決", width / 2, 30);
 
-  textSize(24);
-  text("請準備好手勢後點擊開始", width / 2, height * 0.3);
-  drawButton(width / 2, height - 100, 200, 60, "開始遊戲", color(255), color(80, 50, 120));
+  textSize(18);
+  text("請對準鏡頭，準備好後按「開始遊戲」", width / 2, 80);
+  pop();
+  
+  drawButton(width / 2, height - 60, 200, 50, "開始遊戲", color(255), color(80, 50, 120));
 }
 
 // === 2. 遊戲畫面 ===
@@ -95,6 +98,7 @@ function drawPlayScreen() {
 
 // === 提取出來的視訊繪製功能 ===
 function drawVideoWindow() {
+  push();
   let vW = width * 0.5;
   let vH = height * 0.5;
   let vX = (width - vW) / 2;
@@ -110,15 +114,14 @@ function drawVideoWindow() {
   textAlign(LEFT, CENTER);
   text("  📸 鏡像視訊預覽", vX + 5, vY - 15);
 
-  // 檢查視訊是否已載入
-  if (video.width > 0) {
-    push();
+  // 檢查視訊是否已載入，readyState >= 2 表示已有影像資料
+  if (video.elt && video.elt.readyState >= 2) {
     translate(vX + vW, vY);
     scale(-1, 1);
     image(video, 0, 0, vW, vH);
-    pop();
   } else {
     // 載入中的提示
+    rectMode(CORNER);
     fill(200);
     rect(vX, vY, vW, vH);
     fill(80);
@@ -129,7 +132,9 @@ function drawVideoWindow() {
   stroke(80, 50, 120);
   strokeWeight(2);
   noFill();
+  rectMode(CORNER);
   rect(vX, vY, vW, vH);
+  pop();
 }
 
 // === 3. 結束畫面 ===
