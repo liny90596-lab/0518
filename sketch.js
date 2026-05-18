@@ -42,47 +42,28 @@ function draw() {
 
 // === 1. 開始畫面 ===
 function drawStartScreen() {
-  background('#e7c6ff');
-  textSize(48);
+  // 在開始畫面也顯示視訊預覽，讓玩家可以先調整位置
+  drawVideoWindow();
+  
   textAlign(CENTER, CENTER);
   fill(80, 50, 120);
-  text("剪刀石頭布 AI 大對決", width / 2, height / 2 - 80);
-  
+  textSize(48);
+  text("剪刀石頭布 AI 大對決", width / 2, height * 0.2);
+
   textSize(24);
-  text("請伸出你的右手或左手對準鏡頭出拳", width / 2, height / 2);
-  drawButton(width / 2, height / 2 + 100, 200, 60, "開始遊戲", color(255), color(80, 50, 120));
+  text("請準備好手勢後點擊開始", width / 2, height * 0.3);
+  drawButton(width / 2, height - 100, 200, 60, "開始遊戲", color(255), color(80, 50, 120));
 }
 
 // === 2. 遊戲畫面 ===
 function drawPlayScreen() {
   // 計算視訊要在正中央顯示的寬高與位置 (全螢幕的 50%)
+  drawVideoWindow();
+
   let vW = width * 0.5;
   let vH = height * 0.5;
   let vX = (width - vW) / 2;
   let vY = (height - vH) / 2;
-
-  // 1. 繪製視訊視窗的裝飾邊框與標題欄
-  rectMode(CORNER);
-  noStroke();
-  fill(80, 50, 120);
-  rect(vX, vY - 30, vW, 30, 10, 10, 0, 0); // 頂部標題欄
-  fill(255);
-  textSize(16);
-  textAlign(LEFT, CENTER);
-  text("  📸 鏡像視訊預覽", vX + 5, vY - 15);
-  
-  // 繪製視訊影像 (加入水平翻轉，讓使用者操作更直覺)
-  push();
-  translate(vX + vW, vY);
-  scale(-1, 1);
-  image(video, 0, 0, vW, vH);
-  pop();
-  
-  // 影像邊框
-  stroke(80, 50, 120);
-  strokeWeight(2);
-  noFill();
-  rect(vX, vY, vW, vH);
   
   // 偵測並繪製手部骨架與判定手勢
   if (hands.length > 0) {
@@ -110,6 +91,45 @@ function drawPlayScreen() {
   
   // 出拳確認與回報按鈕
   drawButton(width / 2, height - 80, 200, 50, "確認出拳對決", color(255), color(80, 50, 120));
+}
+
+// === 提取出來的視訊繪製功能 ===
+function drawVideoWindow() {
+  let vW = width * 0.5;
+  let vH = height * 0.5;
+  let vX = (width - vW) / 2;
+  let vY = (height - vH) / 2;
+
+  // 繪製視訊視窗裝飾
+  rectMode(CORNER);
+  noStroke();
+  fill(80, 50, 120);
+  rect(vX, vY - 30, vW, 30, 10, 10, 0, 0);
+  fill(255);
+  textSize(16);
+  textAlign(LEFT, CENTER);
+  text("  📸 鏡像視訊預覽", vX + 5, vY - 15);
+
+  // 檢查視訊是否已載入
+  if (video.width > 0) {
+    push();
+    translate(vX + vW, vY);
+    scale(-1, 1);
+    image(video, 0, 0, vW, vH);
+    pop();
+  } else {
+    // 載入中的提示
+    fill(200);
+    rect(vX, vY, vW, vH);
+    fill(80);
+    textAlign(CENTER, CENTER);
+    text("正在啟動攝影機...", vX + vW/2, vY + vH/2);
+  }
+
+  stroke(80, 50, 120);
+  strokeWeight(2);
+  noFill();
+  rect(vX, vY, vW, vH);
 }
 
 // === 3. 結束畫面 ===
